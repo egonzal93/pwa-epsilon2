@@ -38,7 +38,7 @@ module.exports.addSubscription = (subscription) => {
 }
 
 // Send notifications to all registered subscriptions
-module.exports.send = (message) => {
+module.exports.send = async (message) => {
 
     // Notification promises
     let notifications = [];
@@ -61,13 +61,21 @@ module.exports.send = (message) => {
     })
 
     // Clean subscriptions marked for deletion
-    Promise.all( notifications).then( () => {
+    await Promise.all( notifications);
 
-        // Filter subscriptions that were marked for deletion
-        subscriptions = subscriptions.filter(subscriptions => !subscriptions.delete);
+    // Filter subscriptions that were marked for deletion
+    subscriptions = subscriptions.filter(subscriptions => !subscriptions.delete);
 
-        // Persist 'cleaned' subscription
-        store.put('subscriptions', subscription);
+    // Persist 'cleaned' subscription
+    store.put('subscriptions', subscription);
 
-    })
+    // Promise.all( notifications).then( () => {
+    //
+    //     // Filter subscriptions that were marked for deletion
+    //     subscriptions = subscriptions.filter(subscriptions => !subscriptions.delete);
+    //
+    //     // Persist 'cleaned' subscription
+    //     store.put('subscriptions', subscription);
+    //
+    // })
 }

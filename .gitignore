@@ -3,3 +3,4 @@
 /node_modules
 /server/vapid.json
 /server/db
+.idea

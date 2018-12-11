@@ -60,29 +60,43 @@ const unsubscribe = () => {
 }
 
 // Subscription for push notifications
-const subscribe = () => {
+const subscribe = async () => {
 
     // Check registration is available
     if (!swReg) return console.error('Service Worker Registration Not Found');
 
-    getApplicationServerKey()
-        .then( applicationServerKey => {
-            // Subscribe
-            swReg.pushManager.subscribe({ userVisibleOnly: true , applicationServerKey})
-                .then( res => res.toJSON())
-                .then( subscription => {
-
-                    // console.log(subscription);
-                    console.log(`Subscribed ${JSON.stringify(subscription)}`);
-                    // Pass the subscription to server
-                    fetch(`${serverUrl}/subscribe`, { method: 'POST', body: JSON.stringify(subscription)})
-                        .then( subscription => setSubscribedStatus(subscription))
-                        .catch(err => {
-                            unsubscribe();
-                            console.log(err);
-                        })
-
-                })
-                .catch(console.error);
-        });
-}
+    try {
+        const applicationServerKey = await getApplicationServerKey();
+        const res = await swReg.pushManager.subscribe({ userVisibleOnly: true , applicationServerKey});
+        const sub = res.toJSON();
+        console.log(`Subscribed ${JSON.stringify(sub)}`);
+        try {
+            const subscription = await fetch(`${serverUrl}/subscribe`, { method: 'POST', body: JSON.stringify(sub)});
+            setSubscribedStatus(subscription);
+        }catch (err) {
+            unsubscribe();
+            console.log(err);
+        }
+    } catch (err) {
+        console.log(err);
+    }
+        // .then( applicationServerKey => {
+        //     // Subscribe
+        //     swReg.pushManager.subscribe({ userVisibleOnly: true , applicationServerKey})
+        //         .then( res => res.toJSON())
+        //         .then( subscription => {
+        //
+        //             // console.log(subscription);
+        //             console.log(`Subscribed ${JSON.stringify(subscription)}`);
+        //             // Pass the subscription to server
+        //             fetch(`${serverUrl}/subscribe`, { method: 'POST', body: JSON.stringify(subscription)})
+        //                 .then( subscription => setSubscribedStatus(subscription))
+        //                 .catch(err => {
+        //                     unsubscribe();
+        //                     console.log(err);
+        //                 })
+        //
+        //         })
+        //         .catch(console.error);
+        // });
+};
